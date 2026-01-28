@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grid Guessr</title>
+  <style>
+  body {
+    background: #010029;
+    color: white;
+    text-align: center;
+    font-family: sans-serif;
+  }
+
+  img {
+    max-width: 80%;
+    margin: 30px 0;
+  }
+
+  input#guess {
+    width: 320px;
+    height: 60px;
+    font-size: 24px;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    padding: 6px;
+    text-align: center;
+  }
+
+  input#guess::placeholder {
+    color: #666;
+  }
+
+  button {
+    height: 60px;
+    min-width: 160px;
+    font-size: 22px;
+    background-color: #1e7f43;
+    margin: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    color: white;
+  }
+
+  button:hover {
+    opacity: 0.9;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    font-size: 28px;
+    margin: 6px 0;
+    font-weight: bold;
+  }
+
+  #result {
+    font-size: 32px;
+    margin-top: 20px;
+    font-weight: bold;
+  }
+
+  .top-bar {
+    width: 100%;
+    text-align: left;
+    padding: 5px;
+  }
+
+  .back-btn {
+    background-color: black; 
+    color: white;
+    font-size: 18px;
+    padding: 5px 6px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .back-btn:hover {
+    opacity: 0.9;
+  }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="goHome()">← Back</button>
+</div>
+
+<h1>Grid Guessr</h1>
+<h4>If there is a duplicate city (Portland, Columbus), add the state abbreviation to specify</h4>
+<h4>If playing mode with multiple countries, you must specify the country after the city</h4>
+
+<img id="map" />
+
+<br>
+
+<input id="guess" placeholder="Enter city name" />
+<button onclick="submitGuess()">Guess</button>
+<button onclick="newRound()">Next Map</button>
+
+<p id="result"></p>
+<ul id="history"></ul>
+
+<script>
+const level = window.location.pathname.split("/").pop();
+let validCities = [];
+let gameOver = false;
+
+// Use relative URL for local development, will work on any server
+const API_BASE = "";
+
+function normalizeCity(str) {
+  return str
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function loadValidCities() {
+  const res = await fetch(`${API_BASE}/valid-cities/${level}`);
+  const data = await res.json();
+
+  // normalize once for fast comparisons
+  validCities = data.cities;
+}
+
+async function newRound() {
+  const res = await fetch(`${API_BASE}/new-round/${level}`);
+  const data = await res.json();
+
+  document.getElementById("map").src = data.image;
+  document.getElementById("result").textContent = "";
+  document.getElementById("guess").value = "";
+  document.getElementById("history").innerHTML = "";
+  gameOver = false;
+}
+
+async function submitGuess() {
+  if (gameOver) return;
+
+  const input = document.getElementById("guess");
+  const guess = input.value.trim();
+
+  if (!guess) return;
+
+  const normalizedGuess = normalizeCity(guess);
+
+  if (!validCities.includes(normalizedGuess)) {
+    input.value = "";
+    return;
+  }
+
+  const res = await fetch(`${API_BASE}/guess`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ guess })
+  });
+
+  const data = await res.json();
+
+  if (data.result === "correct") {
+    document.getElementById("result").textContent =
+      `✅ Correct! (${data.attempt}/5)`;
+    gameOver = true;
+    return;
+  }
+
+  if (data.result === "wrong") {
+    const li = document.createElement("li");
+    li.textContent =
+      `${data.attempt}: ${data.guess}, ${data.distance} miles away`;
+    document.getElementById("history").appendChild(li);
+
+    document.getElementById("result").textContent =
+      `${data.remaining} guesses remaining`;
+  }
+
+  if (data.result === "lost") {
+    const li = document.createElement("li");
+    li.textContent =
+      `${data.attempt}: ${data.guess}, ${data.distance} miles away`;
+    document.getElementById("history").appendChild(li);
+
+    document.getElementById("result").textContent =
+      `❌ Out of guesses! It was ${data.correct_city}`;
+    gameOver = true;
+  }
+
+  document.getElementById("guess").value = "";
+}
+
+function goHome() {
+  window.location.href = "/";
+}
+
+async function init() {
+  await loadValidCities();
+  await newRound();
+}
+
+init();
+</script>
+
+</body>
+</html>
