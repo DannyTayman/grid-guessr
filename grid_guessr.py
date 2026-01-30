@@ -29,6 +29,9 @@ LEVELS = {
     "Europe_easy": "Europe_easy",
     "Europe_med": "Europe_med",
     "Europe_extreme": "Europe_extreme",
+    "SA_easy": "SA_easy",
+    "SA_med": "SA_med",
+    "SA_extreme": "SA_extreme",
 }
 
 def normalize_city(name: str) -> str:
