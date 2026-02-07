@@ -173,7 +173,7 @@ def new_round(level: str):
 
     # Load image from Railway
     return {
-        "image": f"/maps/{folder_name}/{filename}"
+    "image": f"https://res.cloudinary.com/dg7wer3du/image/upload/{folder_name}/{filename.replace('.png', '')}"
     }
 
 class GuessPayload(BaseModel):
