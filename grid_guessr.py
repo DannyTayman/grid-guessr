@@ -22,24 +22,28 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 LEVELS = {
-    "easy": "USA_easy",
-    "med": "USA_med",
-    "extreme": "USA_extreme",
-    "NA_easy": "NA_easy",
-    "NA_med": "NA_med",
-    "NA_extreme": "NA_extreme",
-    "Europe_easy": "Europe_easy",
-    "Europe_med": "Europe_med",
-    "Europe_extreme": "Europe_extreme",
-    "SA_easy": "SA_easy",
-    "SA_med": "SA_med",
-    "SA_extreme": "SA_extreme",
-    "Oceania_easy": "Oceania_easy",
-    "Oceania_med": "Oceania_med",
-    "Oceania_extreme": "Oceania_extreme",
-    "Africa_easy": "Africa_easy",
-    "Africa_med": "Africa_med",
-    "Africa_extreme": "Africa_extreme"
+    "easy": ["USA_easy"],
+    "med": ["USA_med"],
+    "extreme": ["USA_extreme"],
+    "NA_easy": ["NA_easy"],
+    "NA_med": ["NA_med"],
+    "NA_extreme": ["NA_extreme"],
+    "Europe_easy": ["Europe_easy"],
+    "Europe_med": ["Europe_med"],
+    "Europe_extreme": ["Europe_extreme"],
+    "SA_easy": ["SA_easy"],
+    "SA_med": ["SA_med"],
+    "SA_extreme": ["SA_extreme"],
+    "Oceania_easy": ["Oceania_easy"],
+    "Oceania_med": ["Oceania_med"],
+    "Oceania_extreme": ["Oceania_extreme"],
+    "Africa_easy": ["Africa_easy"],
+    "Africa_med": ["Africa_med"],
+    "Africa_extreme": ["Africa_extreme"],
+    # World modes combine all continents
+    "world_easy": ["USA_easy", "NA_easy", "Europe_easy", "SA_easy", "Oceania_easy", "Africa_easy"],
+    "world_med": ["USA_med", "NA_med", "Europe_med", "SA_med", "Oceania_med", "Africa_med"],
+    "world_extreme": ["USA_extreme", "NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"]
 }
 
 def normalize_city(name: str) -> str:
@@ -153,31 +157,32 @@ def new_round(level: str):
     if level not in LEVELS:
         return {"error": "Invalid level"}
 
-    folder_name = LEVELS[level]
-    folder = os.path.join(BASE_DIR, folder_name)
+    folder_names = LEVELS[level]  # Now a list
     
-    # Try to get files from local folder if it exists
-    if os.path.exists(folder):
-        files = [f for f in os.listdir(folder) if f.lower().endswith(".png")]
-    else:
-        return {"error": f"Map folder not found: {folder_name}"}
+    # Collect all files from all folders
+    all_files = []
+    for folder_name in folder_names:
+        folder = os.path.join(BASE_DIR, folder_name)
+        
+        if os.path.exists(folder):
+            files = [(f, folder_name) for f in os.listdir(folder) if f.lower().endswith(".png")]
+            all_files.extend(files)
     
-    if not files:
-        return {"error": f"No maps found in {folder_name}"}
+    if not all_files:
+        return {"error": f"No maps found for level {level}"}
 
-    filename = random.choice(files)
+    # Pick random file from combined list
+    filename, folder_name = random.choice(all_files)
     city_name = os.path.splitext(filename)[0]
 
     current_round["city"] = city_name
     current_round["guesses"] = []
 
-    # Load image from Railway
+    # Load image from Cloudinary
+    image_name = os.path.splitext(filename)[0]
     return {
-    "image": f"https://res.cloudinary.com/dg7wer3du/image/upload/{folder_name}/{filename.replace('.png', '')}"
+        "image": f"https://res.cloudinary.com/dg7wer3du/image/upload/{folder_name}/{image_name}"
     }
-
-class GuessPayload(BaseModel):
-    guess: str
 
 @app.post("/guess")
 def guess(payload: GuessPayload):
@@ -239,19 +244,29 @@ def valid_cities(level: str):
     if level not in LEVELS:
         return {"error": "Invalid level"}
 
-    folder_name = LEVELS[level]
-    folder = os.path.join(BASE_DIR, folder_name)
+    folder_names = LEVELS[level]  # Now a list
     
-    if not os.path.exists(folder):
-        return {"cities": []}
+    # Collect cities from all folders
+    all_cities = []
     
-    files = [f for f in os.listdir(folder) if f.lower().endswith(".png")]
-
-    cities = [
-        normalize_city(os.path.splitext(f)[0])
-        for f in files
-    ]
-
+    for folder_name in folder_names:
+        folder = os.path.join(BASE_DIR, folder_name)
+        
+        if not os.path.exists(folder):
+            continue  # Skip if folder doesn't exist
+        
+        files = [f for f in os.listdir(folder) if f.lower().endswith(".png")]
+        
+        cities = [
+            normalize_city(os.path.splitext(f)[0])
+            for f in files
+        ]
+        
+        all_cities.extend(cities)
+    
+    # Remove duplicates (in case same city appears in multiple folders)
+    all_cities = list(set(all_cities))
+    
     return {
-        "cities": cities
+        "cities": all_cities
     }
