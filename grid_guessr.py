@@ -46,6 +46,9 @@ LEVELS = {
     "world_extreme": ["USA_extreme", "NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"]
 }
 
+class GuessPayload(BaseModel):
+    guess: str
+
 def normalize_city(name: str) -> str:
     return name.replace("_", " ").lower().strip()
 
