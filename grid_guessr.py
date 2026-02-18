@@ -22,9 +22,9 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 LEVELS = {
-    "easy": ["USA_easy"],
-    "med": ["USA_med"],
-    "extreme": ["USA_extreme"],
+    "world_easy": ["USA_easy", "NA_easy", "Europe_easy", "SA_easy", "Oceania_easy", "Africa_easy"],
+    "world_med": ["USA_med", "NA_med", "Europe_med", "SA_med", "Oceania_med", "Africa_med"],
+    "world_extreme": ["USA_extreme", "NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"],
     "NA_easy": ["NA_easy"],
     "NA_med": ["NA_med"],
     "NA_extreme": ["NA_extreme"],
@@ -40,11 +40,110 @@ LEVELS = {
     "Africa_easy": ["Africa_easy"],
     "Africa_med": ["Africa_med"],
     "Africa_extreme": ["Africa_extreme"],
-    # World modes combine all continents
-    "world_easy": ["USA_easy", "NA_easy", "Europe_easy", "SA_easy", "Oceania_easy", "Africa_easy"],
-    "world_med": ["USA_med", "NA_med", "Europe_med", "SA_med", "Oceania_med", "Africa_med"],
-    "world_extreme": ["USA_extreme", "NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"]
+    "easy": ["USA_easy"],
+    "med": ["USA_med"],
+    "extreme": ["USA_extreme"],
+    "DEU": ["Europe_easy", "Europe_med", "Europe_extreme"], 
+    "FRA": ["Europe_easy", "Europe_med", "Europe_extreme"], 
+    "UK": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "UKR": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "POL": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "RUS": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "ESP": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "ITL": ["Europe_easy", "Europe_med", "Europe_extreme"],
+    "BRA": ["SA_easy", "SA_med", "SA_extreme"],
+    "ARG": ["SA_easy", "SA_med", "SA_extreme"],
+    "COL": ["SA_easy", "SA_med", "SA_extreme"],
+    "VZL": ["SA_easy", "SA_med", "SA_extreme"],
+    "CHL": ["SA_easy", "SA_med", "SA_extreme"],
+    "RSA": ["Africa_easy", "Africa_med", "Africa_extreme"],
+    "NGA": ["Africa_easy", "Africa_med", "Africa_extreme"],
+    "DRC": ["Africa_easy", "Africa_med", "Africa_extreme"],
+    "MRC": ["Africa_easy", "Africa_med", "Africa_extreme"],
+    "CAN": ["NA_easy", "NA_med", "NA_extreme"]
 }
+
+COUNTRY_CODES = {}
+def load_country_codes():
+    """Load country codes from CSV"""
+    csv_path = os.path.join(BASE_DIR, 'country_codes_dic.csv')
+    
+    if not os.path.exists(csv_path):
+        print("⚠️  Warning: country_codes_dic.csv not found")
+        return
+    
+    try:
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                if len(row) == 2:
+                    country, code = row
+                    if code != 'N/A':
+                        COUNTRY_CODES[code] = country
+        print(f"✅ Loaded {len(COUNTRY_CODES)} country codes")
+    except Exception as e:
+        print(f"❌ Error loading country codes: {e}")
+
+# Call on startup (add near load_coordinates())
+load_country_codes()
+
+# Add route for countries reference page
+@app.get("/countries")
+def countries_page():
+    return FileResponse(os.path.join(BASE_DIR, "countries.html"))
+
+# Modify new_round to support country filtering
+@app.get("/new-round/{level}")
+def new_round(level: str):
+    if level not in LEVELS:
+        return {"error": "Invalid level"}
+
+    folder_names = LEVELS[level]  # Now a list
+    
+    # Check if this is a country-specific level (e.g., "GER" or "FRA")
+    country_code = None
+    if level.upper() in COUNTRY_CODES:
+        country_code = level.upper()
+        # For country mode, use all difficulty folders from Europe
+        # Adjust based on your folder structure
+        if any('Europe' in f for f in folder_names):
+            folder_names = ["Europe_easy", "Europe_med", "Europe_extreme"]
+        elif any('Africa' in f for f in folder_names):
+            folder_names = ["Africa_easy", "Africa_med", "Africa_extreme"]
+        # Add more regions as needed
+    
+    # Collect all files from all folders
+    all_files = []
+    for folder_name in folder_names:
+        folder = os.path.join(BASE_DIR, folder_name)
+        
+        if os.path.exists(folder):
+            files = os.listdir(folder)
+            
+            # Filter by country code if specified
+            if country_code:
+                files = [f for f in files if f.lower().endswith(f"_{country_code.lower()}.png")]
+            else:
+                files = [f for f in files if f.lower().endswith(".png")]
+            
+            file_tuples = [(f, folder_name) for f in files]
+            all_files.extend(file_tuples)
+    
+    if not all_files:
+        return {"error": f"No maps found for level {level}"}
+
+    # Pick random file from combined list
+    filename, folder_name = random.choice(all_files)
+    city_name = os.path.splitext(filename)[0]
+
+    current_round["city"] = city_name
+    current_round["guesses"] = []
+
+    # Load image from Cloudinary
+    image_name = os.path.splitext(filename)[0]
+    return {
+        "image": f"https://res.cloudinary.com/dg7wer3du/image/upload/{folder_name}/{image_name}"
+    }
 
 class GuessPayload(BaseModel):
     guess: str

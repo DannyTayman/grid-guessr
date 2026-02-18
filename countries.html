@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Country Codes - Grid Guessr</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .top-bar {
+      width: 100%;
+      text-align: left;
+      padding: 5px;
+      margin-bottom: 20px;
+    }
+
+    .back-btn {
+      background-color: darkgray;
+      color: white;
+      font-size: 18px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      opacity: 0.9;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 40px;
+    }
+
+    .search-box {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .search-box input {
+      width: 400px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      background: #222;
+      color: white;
+    }
+
+    .countries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .country-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .country-card:hover {
+      background: #252525;
+      border-color: #555;
+    }
+
+    .country-name {
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .country-code {
+      background: #333;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 16px;
+      color: #0f0;
+    }
+
+    .region-header {
+      grid-column: 1 / -1;
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="goHome()">← Back to Home</button>
+</div>
+
+<h1>Country Code Reference</h1>
+<p class="subtitle">Use these codes to specify cities in multi-country game modes</p>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="Search countries..." oninput="filterCountries()">
+</div>
+
+<div class="countries-grid" id="countriesGrid">
+  <div class="region-header">Africa</div>
+  <div class="country-card" data-country="algeria" data-code="ALG">
+    <span class="country-name">Algeria</span>
+    <span class="country-code">ALG</span>
+  </div>
+  <div class="country-card" data-country="angola" data-code="ANG">
+    <span class="country-name">Angola</span>
+    <span class="country-code">ANG</span>
+  </div>
+  <div class="country-card" data-country="benin" data-code="BEN">
+    <span class="country-name">Benin</span>
+    <span class="country-code">BEN</span>
+  </div>
+  <div class="country-card" data-country="botswana" data-code="BOT">
+    <span class="country-name">Botswana</span>
+    <span class="country-code">BOT</span>
+  </div>
+  <div class="country-card" data-country="burkina faso" data-code="BF">
+    <span class="country-name">Burkina Faso</span>
+    <span class="country-code">BF</span>
+  </div>
+  <div class="country-card" data-country="burundi" data-code="BUR">
+    <span class="country-name">Burundi</span>
+    <span class="country-code">BUR</span>
+  </div>
+  <div class="country-card" data-country="cameroon" data-code="CMR">
+    <span class="country-name">Cameroon</span>
+    <span class="country-code">CMR</span>
+  </div>
+  <div class="country-card" data-country="cape verde" data-code="CV">
+    <span class="country-name">Cape Verde</span>
+    <span class="country-code">CV</span>
+  </div>
+  <div class="country-card" data-country="central african rep." data-code="CAR">
+    <span class="country-name">Central African Rep.</span>
+    <span class="country-code">CAR</span>
+  </div>
+  <div class="country-card" data-country="chad" data-code="CHD">
+    <span class="country-name">Chad</span>
+    <span class="country-code">CHD</span>
+  </div>
+  <div class="country-card" data-country="comoros" data-code="CMR">
+    <span class="country-name">Comoros</span>
+    <span class="country-code">CMR</span>
+  </div>
+  <div class="country-card" data-country="dem. rep. congo" data-code="DRC">
+    <span class="country-name">Dem. Rep. Congo</span>
+    <span class="country-code">DRC</span>
+  </div>
+  <div class="country-card" data-country="djibouti" data-code="DJB">
+    <span class="country-name">Djibouti</span>
+    <span class="country-code">DJB</span>
+  </div>
+  <div class="country-card" data-country="egypt" data-code="EGY">
+    <span class="country-name">Egypt</span>
+    <span class="country-code">EGY</span>
+  </div>
+  <div class="country-card" data-country="equatorial guinea" data-code="EQG">
+    <span class="country-name">Equatorial Guinea</span>
+    <span class="country-code">EQG</span>
+  </div>
+  <div class="country-card" data-country="eritrea" data-code="ERT">
+    <span class="country-name">Eritrea</span>
+    <span class="country-code">ERT</span>
+  </div>
+  <div class="country-card" data-country="eswatini" data-code="ESW">
+    <span class="country-name">Eswatini</span>
+    <span class="country-code">ESW</span>
+  </div>
+  <div class="country-card" data-country="ethiopia" data-code="ETH">
+    <span class="country-name">Ethiopia</span>
+    <span class="country-code">ETH</span>
+  </div>
+  <div class="country-card" data-country="gabon" data-code="GBN">
+    <span class="country-name">Gabon</span>
+    <span class="country-code">GBN</span>
+  </div>
+  <div class="country-card" data-country="gambia" data-code="GMB">
+    <span class="country-name">Gambia</span>
+    <span class="country-code">GMB</span>
+  </div>
+  <div class="country-card" data-country="ghana" data-code="GHA">
+    <span class="country-name">Ghana</span>
+    <span class="country-code">GHA</span>
+  </div>
+  <div class="country-card" data-country="guinea" data-code="GUI">
+    <span class="country-name">Guinea</span>
+    <span class="country-code">GUI</span>
+  </div>
+  <div class="country-card" data-country="guinea bissau" data-code="GBS">
+    <span class="country-name">Guinea Bissau</span>
+    <span class="country-code">GBS</span>
+  </div>
+  <div class="country-card" data-country="ivory coast" data-code="IVY">
+    <span class="country-name">Ivory Coast</span>
+    <span class="country-code">IVY</span>
+  </div>
+  <div class="country-card" data-country="kenya" data-code="KNY">
+    <span class="country-name">Kenya</span>
+    <span class="country-code">KNY</span>
+  </div>
+  <div class="country-card" data-country="lesotho" data-code="LSO">
+    <span class="country-name">Lesotho</span>
+    <span class="country-code">LSO</span>
+  </div>
+  <div class="country-card" data-country="liberia" data-code="LIB">
+    <span class="country-name">Liberia</span>
+    <span class="country-code">LIB</span>
+  </div>
+  <div class="country-card" data-country="libya" data-code="LBY">
+    <span class="country-name">Libya</span>
+    <span class="country-code">LBY</span>
+  </div>
+  <div class="country-card" data-country="madagascar" data-code="MAD">
+    <span class="country-name">Madagascar</span>
+    <span class="country-code">MAD</span>
+  </div>
+  <div class="country-card" data-country="malawi" data-code="MLW">
+    <span class="country-name">Malawi</span>
+    <span class="country-code">MLW</span>
+  </div>
+  <div class="country-card" data-country="mali" data-code="MLI">
+    <span class="country-name">Mali</span>
+    <span class="country-code">MLI</span>
+  </div>
+  <div class="country-card" data-country="mauritania" data-code="MTA">
+    <span class="country-name">Mauritania</span>
+    <span class="country-code">MTA</span>
+  </div>
+  <div class="country-card" data-country="mauritius" data-code="MAU">
+    <span class="country-name">Mauritius</span>
+    <span class="country-code">MAU</span>
+  </div>
+  <div class="country-card" data-country="morocco" data-code="MRC">
+    <span class="country-name">Morocco</span>
+    <span class="country-code">MRC</span>
+  </div>
+  <div class="country-card" data-country="mozambique" data-code="MZB">
+    <span class="country-name">Mozambique</span>
+    <span class="country-code">MZB</span>
+  </div>
+  <div class="country-card" data-country="namibia" data-code="NAM">
+    <span class="country-name">Namibia</span>
+    <span class="country-code">NAM</span>
+  </div>
+  <div class="country-card" data-country="niger" data-code="NIG">
+    <span class="country-name">Niger</span>
+    <span class="country-code">NIG</span>
+  </div>
+  <div class="country-card" data-country="nigeria" data-code="NGA">
+    <span class="country-name">Nigeria</span>
+    <span class="country-code">NGA</span>
+  </div>
+  <div class="country-card" data-country="rep. congo" data-code="RCG">
+    <span class="country-name">Rep. Congo</span>
+    <span class="country-code">RCG</span>
+  </div>
+  <div class="country-card" data-country="rwanda" data-code="RWA">
+    <span class="country-name">Rwanda</span>
+    <span class="country-code">RWA</span>
+  </div>
+  <div class="country-card" data-country="sao tome and principe" data-code="ST">
+    <span class="country-name">Sao Tome and Principe</span>
+    <span class="country-code">ST</span>
+  </div>
+  <div class="country-card" data-country="senegal" data-code="SGL">
+    <span class="country-name">Senegal</span>
+    <span class="country-code">SGL</span>
+  </div>
+  <div class="country-card" data-country="seychelles" data-code="SEY">
+    <span class="country-name">Seychelles</span>
+    <span class="country-code">SEY</span>
+  </div>
+  <div class="country-card" data-country="sierra leone" data-code="SL">
+    <span class="country-name">Sierra Leone</span>
+    <span class="country-code">SL</span>
+  </div>
+  <div class="country-card" data-country="somalia" data-code="SOM">
+    <span class="country-name">Somalia</span>
+    <span class="country-code">SOM</span>
+  </div>
+  <div class="country-card" data-country="south africa" data-code="RSA">
+    <span class="country-name">South Africa</span>
+    <span class="country-code">RSA</span>
+  </div>
+  <div class="country-card" data-country="south sudan" data-code="SSD">
+    <span class="country-name">South Sudan</span>
+    <span class="country-code">SSD</span>
+  </div>
+  <div class="country-card" data-country="sudan" data-code="SUD">
+    <span class="country-name">Sudan</span>
+    <span class="country-code">SUD</span>
+  </div>
+  <div class="country-card" data-country="tanzania" data-code="TZN">
+    <span class="country-name">Tanzania</span>
+    <span class="country-code">TZN</span>
+  </div>
+  <div class="country-card" data-country="togo" data-code="TGO">
+    <span class="country-name">Togo</span>
+    <span class="country-code">TGO</span>
+  </div>
+  <div class="country-card" data-country="tunisia" data-code="TUN">
+    <span class="country-name">Tunisia</span>
+    <span class="country-code">TUN</span>
+  </div>
+  <div class="country-card" data-country="uganda" data-code="UGD">
+    <span class="country-name">Uganda</span>
+    <span class="country-code">UGD</span>
+  </div>
+  <div class="country-card" data-country="zambia" data-code="ZAM">
+    <span class="country-name">Zambia</span>
+    <span class="country-code">ZAM</span>
+  </div>
+  <div class="country-card" data-country="zimbabwe" data-code="ZMB">
+    <span class="country-name">Zimbabwe</span>
+    <span class="country-code">ZMB</span>
+  </div>
+  <div class="region-header">Europe</div>
+  <div class="country-card" data-country="albania" data-code="ALB">
+    <span class="country-name">Albania</span>
+    <span class="country-code">ALB</span>
+  </div>
+  <div class="country-card" data-country="andorra" data-code="AND">
+    <span class="country-name">Andorra</span>
+    <span class="country-code">AND</span>
+  </div>
+  <div class="country-card" data-country="austria" data-code="AUT">
+    <span class="country-name">Austria</span>
+    <span class="country-code">AUT</span>
+  </div>
+  <div class="country-card" data-country="belarus" data-code="BLR">
+    <span class="country-name">Belarus</span>
+    <span class="country-code">BLR</span>
+  </div>
+  <div class="country-card" data-country="belgium" data-code="BEL">
+    <span class="country-name">Belgium</span>
+    <span class="country-code">BEL</span>
+  </div>
+  <div class="country-card" data-country="bosnia and herzegovina" data-code="BIH">
+    <span class="country-name">Bosnia and Herzegovina</span>
+    <span class="country-code">BIH</span>
+  </div>
+  <div class="country-card" data-country="croatia" data-code="CRO">
+    <span class="country-name">Croatia</span>
+    <span class="country-code">CRO</span>
+  </div>
+  <div class="country-card" data-country="czechia" data-code="CZE">
+    <span class="country-name">Czechia</span>
+    <span class="country-code">CZE</span>
+  </div>
+  <div class="country-card" data-country="denmark" data-code="DEN">
+    <span class="country-name">Denmark</span>
+    <span class="country-code">DEN</span>
+  </div>
+  <div class="country-card" data-country="estonia" data-code="EST">
+    <span class="country-name">Estonia</span>
+    <span class="country-code">EST</span>
+  </div>
+  <div class="country-card" data-country="finland" data-code="FIN">
+    <span class="country-name">Finland</span>
+    <span class="country-code">FIN</span>
+  </div>
+  <div class="country-card" data-country="france" data-code="FRA">
+    <span class="country-name">France</span>
+    <span class="country-code">FRA</span>
+  </div>
+  <div class="country-card" data-country="germany" data-code="DEU">
+    <span class="country-name">Germany</span>
+    <span class="country-code">DEU</span>
+  </div>
+  <div class="country-card" data-country="greece" data-code="GR">
+    <span class="country-name">Greece</span>
+    <span class="country-code">GR</span>
+  </div>
+  <div class="country-card" data-country="hungary" data-code="HUN">
+    <span class="country-name">Hungary</span>
+    <span class="country-code">HUN</span>
+  </div>
+  <div class="country-card" data-country="italy" data-code="ITL">
+    <span class="country-name">Italy</span>
+    <span class="country-code">ITL</span>
+  </div>
+  <div class="country-card" data-country="kosovo" data-code="KVO">
+    <span class="country-name">Kosovo</span>
+    <span class="country-code">KVO</span>
+  </div>
+  <div class="country-card" data-country="latvia" data-code="LAT">
+    <span class="country-name">Latvia</span>
+    <span class="country-code">LAT</span>
+  </div>
+  <div class="country-card" data-country="liechtenstein" data-code="LIE">
+    <span class="country-name">Liechtenstein</span>
+    <span class="country-code">LIE</span>
+  </div>
+  <div class="country-card" data-country="lithuania" data-code="LTU">
+    <span class="country-name">Lithuania</span>
+    <span class="country-code">LTU</span>
+  </div>
+  <div class="country-card" data-country="luxembourg" data-code="LUX">
+    <span class="country-name">Luxembourg</span>
+    <span class="country-code">LUX</span>
+  </div>
+  <div class="country-card" data-country="malta" data-code="MLT">
+    <span class="country-name">Malta</span>
+    <span class="country-code">MLT</span>
+  </div>
+  <div class="country-card" data-country="moldova" data-code="MDA">
+    <span class="country-name">Moldova</span>
+    <span class="country-code">MDA</span>
+  </div>
+  <div class="country-card" data-country="montenegro" data-code="MNE">
+    <span class="country-name">Montenegro</span>
+    <span class="country-code">MNE</span>
+  </div>
+  <div class="country-card" data-country="netherlands" data-code="NLA">
+    <span class="country-name">Netherlands</span>
+    <span class="country-code">NLA</span>
+  </div>
+  <div class="country-card" data-country="norway" data-code="NOR">
+    <span class="country-name">Norway</span>
+    <span class="country-code">NOR</span>
+  </div>
+  <div class="country-card" data-country="poland" data-code="POL">
+    <span class="country-name">Poland</span>
+    <span class="country-code">POL</span>
+  </div>
+  <div class="country-card" data-country="portugal" data-code="POR">
+    <span class="country-name">Portugal</span>
+    <span class="country-code">POR</span>
+  </div>
+  <div class="country-card" data-country="romania" data-code="ROU">
+    <span class="country-name">Romania</span>
+    <span class="country-code">ROU</span>
+  </div>
+  <div class="country-card" data-country="russia" data-code="RUS">
+    <span class="country-name">Russia</span>
+    <span class="country-code">RUS</span>
+  </div>
+  <div class="country-card" data-country="serbia" data-code="SRB">
+    <span class="country-name">Serbia</span>
+    <span class="country-code">SRB</span>
+  </div>
+  <div class="country-card" data-country="slovakia" data-code="SVK">
+    <span class="country-name">Slovakia</span>
+    <span class="country-code">SVK</span>
+  </div>
+  <div class="country-card" data-country="slovenia" data-code="SVN">
+    <span class="country-name">Slovenia</span>
+    <span class="country-code">SVN</span>
+  </div>
+  <div class="country-card" data-country="spain" data-code="ESP">
+    <span class="country-name">Spain</span>
+    <span class="country-code">ESP</span>
+  </div>
+  <div class="country-card" data-country="sweden" data-code="SWE">
+    <span class="country-name">Sweden</span>
+    <span class="country-code">SWE</span>
+  </div>
+  <div class="country-card" data-country="switzerland" data-code="SUI">
+    <span class="country-name">Switzerland</span>
+    <span class="country-code">SUI</span>
+  </div>
+  <div class="country-card" data-country="turkey" data-code="TUR">
+    <span class="country-name">Turkey</span>
+    <span class="country-code">TUR</span>
+  </div>
+  <div class="country-card" data-country="ukraine" data-code="UKR">
+    <span class="country-name">Ukraine</span>
+    <span class="country-code">UKR</span>
+  </div>
+  <div class="country-card" data-country="united kingdom" data-code="UK">
+    <span class="country-name">United Kingdom</span>
+    <span class="country-code">UK</span>
+  </div>
+  <div class="region-header">North America</div>
+  <div class="country-card" data-country="antigua and barbuda" data-code="AB">
+    <span class="country-name">Antigua and Barbuda</span>
+    <span class="country-code">AB</span>
+  </div>
+  <div class="country-card" data-country="bahamas" data-code="BAH">
+    <span class="country-name">Bahamas</span>
+    <span class="country-code">BAH</span>
+  </div>
+  <div class="country-card" data-country="belize" data-code="BLZ">
+    <span class="country-name">Belize</span>
+    <span class="country-code">BLZ</span>
+  </div>
+  <div class="country-card" data-country="canada" data-code="CAN">
+    <span class="country-name">Canada</span>
+    <span class="country-code">CAN</span>
+  </div>
+  <div class="country-card" data-country="costa rica" data-code="CR">
+    <span class="country-name">Costa Rica</span>
+    <span class="country-code">CR</span>
+  </div>
+  <div class="country-card" data-country="cuba" data-code="CB">
+    <span class="country-name">Cuba</span>
+    <span class="country-code">CB</span>
+  </div>
+  <div class="country-card" data-country="dominican republic" data-code="DR">
+    <span class="country-name">Dominican Republic</span>
+    <span class="country-code">DR</span>
+  </div>
+  <div class="country-card" data-country="el salvador" data-code="ES">
+    <span class="country-name">El Salvador</span>
+    <span class="country-code">ES</span>
+  </div>
+  <div class="country-card" data-country="guatemala" data-code="GML">
+    <span class="country-name">Guatemala</span>
+    <span class="country-code">GML</span>
+  </div>
+  <div class="country-card" data-country="haiti" data-code="HT">
+    <span class="country-name">Haiti</span>
+    <span class="country-code">HT</span>
+  </div>
+  <div class="country-card" data-country="honduras" data-code="HND">
+    <span class="country-name">Honduras</span>
+    <span class="country-code">HND</span>
+  </div>
+  <div class="country-card" data-country="mexico" data-code="MEX">
+    <span class="country-name">Mexico</span>
+    <span class="country-code">MEX</span>
+  </div>
+  <div class="country-card" data-country="panama" data-code="PAN">
+    <span class="country-name">Panama</span>
+    <span class="country-code">PAN</span>
+  </div>
+  <div class="country-card" data-country="saint lucia" data-code="SL">
+    <span class="country-name">Saint Lucia</span>
+    <span class="country-code">SL</span>
+  </div>
+  <div class="country-card" data-country="st kitts and nevis" data-code="SK">
+    <span class="country-name">St Kitts and Nevis</span>
+    <span class="country-code">SK</span>
+  </div>
+  <div class="country-card" data-country="united states" data-code="USA">
+    <span class="country-name">United States</span>
+    <span class="country-code">USA</span>
+  </div>
+  <div class="region-header">South America</div>
+  <div class="country-card" data-country="argentina" data-code="ARG">
+    <span class="country-name">Argentina</span>
+    <span class="country-code">ARG</span>
+  </div>
+  <div class="country-card" data-country="bolivia" data-code="BLV">
+    <span class="country-name">Bolivia</span>
+    <span class="country-code">BLV</span>
+  </div>
+  <div class="country-card" data-country="brazil" data-code="BRA">
+    <span class="country-name">Brazil</span>
+    <span class="country-code">BRA</span>
+  </div>
+  <div class="country-card" data-country="chile" data-code="CHL">
+    <span class="country-name">Chile</span>
+    <span class="country-code">CHL</span>
+  </div>
+  <div class="country-card" data-country="colombia" data-code="COL">
+    <span class="country-name">Colombia</span>
+    <span class="country-code">COL</span>
+  </div>
+  <div class="country-card" data-country="ecuador" data-code="ECU">
+    <span class="country-name">Ecuador</span>
+    <span class="country-code">ECU</span>
+  </div>
+  <div class="country-card" data-country="guyana" data-code="GUY">
+    <span class="country-name">Guyana</span>
+    <span class="country-code">GUY</span>
+  </div>
+  <div class="country-card" data-country="paraguay" data-code="PRG">
+    <span class="country-name">Paraguay</span>
+    <span class="country-code">PRG</span>
+  </div>
+  <div class="country-card" data-country="peru" data-code="PR">
+    <span class="country-name">Peru</span>
+    <span class="country-code">PR</span>
+  </div>
+  <div class="country-card" data-country="uruguay" data-code="URG">
+    <span class="country-name">Uruguay</span>
+    <span class="country-code">URG</span>
+  </div>
+  <div class="country-card" data-country="venezuela" data-code="VZL">
+    <span class="country-name">Venezuela</span>
+    <span class="country-code">VZL</span>
+  </div>
+  <div class="region-header">Oceania</div>
+  <div class="country-card" data-country="australia" data-code="AUS">
+    <span class="country-name">Australia</span>
+    <span class="country-code">AUS</span>
+  </div>
+  <div class="country-card" data-country="fiji" data-code="FJ">
+    <span class="country-name">Fiji</span>
+    <span class="country-code">FJ</span>
+  </div>
+  <div class="country-card" data-country="kiribati" data-code="KBT">
+    <span class="country-name">Kiribati</span>
+    <span class="country-code">KBT</span>
+  </div>
+  <div class="country-card" data-country="new zealand" data-code="NZ">
+    <span class="country-name">New Zealand</span>
+    <span class="country-code">NZ</span>
+  </div>
+  <div class="country-card" data-country="papua new guinea" data-code="PNG">
+    <span class="country-name">Papua New Guinea</span>
+    <span class="country-code">PNG</span>
+  </div>
+  <div class="country-card" data-country="samoa" data-code="SMA">
+    <span class="country-name">Samoa</span>
+    <span class="country-code">SMA</span>
+  </div>
+  <div class="country-card" data-country="solomon islands" data-code="SMI">
+    <span class="country-name">Solomon Islands</span>
+    <span class="country-code">SMI</span>
+  </div>
+  <div class="country-card" data-country="tonga" data-code="TGA">
+    <span class="country-name">Tonga</span>
+    <span class="country-code">TGA</span>
+  </div>
+
+</div>
+
+<script>
+function filterCountries() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.country-card');
+  
+  cards.forEach(card => {
+    const country = card.getAttribute('data-country');
+    const code = card.getAttribute('data-code').toLowerCase();
+    
+    if (country.includes(searchTerm) || code.includes(searchTerm)) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+function goHome() {
+  window.location.href = '/';
+}
+</script>
+
+</body>
+</html>
