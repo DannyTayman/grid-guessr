@@ -22,9 +22,9 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 LEVELS = {
-    "world_easy": ["USA_easy", "NA_easy", "Europe_easy", "SA_easy", "Oceania_easy", "Africa_easy"],
-    "world_med": ["USA_med", "NA_med", "Europe_med", "SA_med", "Oceania_med", "Africa_med"],
-    "world_extreme": ["USA_extreme", "NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"],
+    "world_easy": ["NA_easy", "Europe_easy", "SA_easy", "Oceania_easy", "Africa_easy"],
+    "world_med": ["NA_med", "Europe_med", "SA_med", "Oceania_med", "Africa_med"],
+    "world_extreme": ["NA_extreme", "Europe_extreme", "SA_extreme", "Oceania_extreme", "Africa_extreme"],
     "NA_easy": ["NA_easy"],
     "NA_med": ["NA_med"],
     "NA_extreme": ["NA_extreme"],
